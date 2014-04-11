@@ -22,15 +22,15 @@ readme = _read("README.md")
 license = _read("LICENSE.md")
 
 setup(
-    name='py3oidc',
+    name='oidc',
     version='0.0.1',
-    test_suite='py3oidc',
+    test_suite='oidc',
     author='Kohei YOSHIDA',
     author_email='kohei.yoshida@gehirn.co.jp',
     description='OpenID Connect library for Python 3.',
     long_description=readme,
     license=license,
-    url='https://github.com/GehirnInc/py3oidc',
+    url='https://github.com/GehirnInc/python-oidc',
     packages=find_packages(),
     install_requires=requires,
     tests_require=tests_require,
