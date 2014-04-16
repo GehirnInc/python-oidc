@@ -5,7 +5,9 @@ import os
 from setuptools import setup, find_packages
 
 here = os.path.dirname(__file__)
-requires = []
+requires = [
+    'py3oauth2',
+]
 tests_require = [
     'nose',
     'coverage'
