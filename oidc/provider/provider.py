@@ -49,13 +49,14 @@ class UserInfoProvider(ResourceProvider):
         self.header = header
 
     def get_access_token(self):
-        header = filter(
-            lambda key, value: key.lower() == 'authorization',
+        header = list(filter(
+            lambda item: item[0].lower() == 'authorization',
             self.header.items()
-        )
+        ))
         if header:
-            parts = header[0].split()
-            if len(parts) is 1 and parts[0] == 'Bearer':
+            key, value = header[0]
+            parts = value.split()
+            if len(parts) is 2 and parts[0] == 'Bearer':
                 return (parts[1], 'bearer')
 
         return (None, '')
