@@ -13,8 +13,12 @@ from ..interfaces import IOwner
 
 class Owner(IOwner):
 
-    def __init__(self, id):
+    def __init__(self, id, user_info):
         self.id = id
+        self.user_info = user_info
+
+    def get_user_info(self, scopes):
+        return self.user_info.filter(scopes)
 
 
 class Client(IClient):
