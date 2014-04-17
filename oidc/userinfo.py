@@ -7,6 +7,16 @@ from py3oauth2.provider.message import (
 
 
 class UserInfo(Message):
+    __scopes__ = {
+        'openid': {'sub'},
+        'profile': {'name', 'given_name', 'family_name', 'middle_name',
+                    'nickname', 'preferred_username', 'profile', 'picture',
+                    'website', 'gender', 'birthdate', 'zoneinfo', 'locale',
+                    'update_at'},
+        'email': {'email', 'email_verified'},
+        'address': {'address'},
+        'phone': {'phone_number', 'phone_number_verified'},
+    }
     sub = Parameter(str, required=True)
 
     # scope = profile
@@ -35,3 +45,15 @@ class UserInfo(Message):
     # phone
     phone_number = Parameter(str)
     phone_number_verified = Parameter(bool)
+
+    def filter(self, scopes):
+        inst = self.__class__()
+
+        params = set()
+        for scope in scopes:
+            params.update(self.__scopes__[scope])
+
+        for param in params:
+            setattr(inst, param, getattr(self, param))
+
+        return inst
