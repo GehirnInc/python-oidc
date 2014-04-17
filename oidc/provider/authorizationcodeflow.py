@@ -18,14 +18,13 @@ class IDToken(BaseIDToken):
 class AuthenticationResponse(AuthorizationResponse):
     __id_token_class__ = IDToken
 
-    # OpenID Connect parameters
     id_token = Parameter(str, required=True)
 
 
 class AuthenticationRequest(AuthorizationRequest):
     response = AuthenticationResponse
 
-    # OAuth2 parameters
+    # OAuth2.0 parameters
     redirect_uri = Parameter(str, required=True)
     response_mode = Parameter(str)
 
