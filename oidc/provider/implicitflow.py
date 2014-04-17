@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 
-from py3oauth2.implicitgrant import (
+from py3oauth2.provider.implicitgrant import (
     Request as BaseRequest,
     Response as BaseResponse,
 )
-from py3oauth2.message import Parameter
+from py3oauth2.provider.message import Parameter
 
 from ..idtoken import IDToken as BaseIDToken
 

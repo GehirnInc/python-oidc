@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 
-from py3oauth2.authorizationcodegrant import (
+from py3oauth2.provider.authorizationcodegrant import (
     AuthorizationRequest,
     AuthorizationResponse,
 )
-from py3oauth2.message import Parameter
+from py3oauth2.provider.message import Parameter
 
 from ..idtoken import IDToken as BaseIDToken
 

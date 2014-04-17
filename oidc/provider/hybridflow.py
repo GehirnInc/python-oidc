@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from py3oauth2.message import Parameter
+from py3oauth2.provider.message import Parameter
 
 from ..idtoken import IDToken as BaseIDToken
 from .authorizationcodeflow import (
