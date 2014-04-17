@@ -61,15 +61,15 @@ class UserInfoProvider(ResourceProvider):
 
         return (None, '')
 
-    def handle_request(self, scopes=set('openid')):
+    def handle_request(self, scopes=set(['openid'])):
         try:
             token = self.authorize(scopes)
         except AccessDenied:
-            return json.dumps({'error': 'access_denied'})
+            raise  # TODO: return error response
         else:
             if scopes is {'openid'}:
                 scopes = set(token.get_scope().split())
 
             owner = token.get_owner()
-            idtoken = owner.get_idtoken(scopes)
-            return idtoken.to_json()
+            user_info = owner.get_user_info(scopes)
+            return user_info

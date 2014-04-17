@@ -3,5 +3,5 @@
 
 class IOwner:
 
-    def get_idtoken(self, scopes):
+    def get_user_info(self, scopes):
         raise NotImplementedError
