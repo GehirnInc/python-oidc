@@ -37,3 +37,11 @@ class AuthenticationRequest(AuthorizationRequest):
     id_token_hint = Parameter(str)
     login_hint = Parameter(str)
     acr_values = Parameter(str)
+
+    def answer(self, provider, owner):
+        resp = super(self.__class__, self).answer(provider, owner)
+        if isinstance(resp, self.err_response):
+            return resp
+
+        resp.id_token = IDToken()  # here
+        return resp
