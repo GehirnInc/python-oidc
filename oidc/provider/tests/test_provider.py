@@ -5,13 +5,116 @@ import string
 import unittest
 import uuid
 
-from ..provider import UserInfoProvider
+from py3oauth2.provider import (
+    refreshtokengrant,
+    authorizationcodegrant,
+)
+
+from ..provider import (
+    AuthorizationProvider,
+    UserInfoProvider
+)
+from .. import (
+    authorizationcodeflow,
+    hybridflow,
+    implicitflow,
+)
 from ...userinfo import UserInfo
 from . import (
     Client,
     Owner,
     Store,
 )
+
+
+class TestAuthorizationProvider(unittest.TestCase):
+
+    def setUp(self):
+        self.store = Store()
+
+    def test_detect_request_class(self):
+        inst = AuthorizationProvider(self.store)
+        request = {
+            'grant_type': 'refresh_token',
+        }
+        self.assertIs(
+            inst.detect_request_class(request),
+            refreshtokengrant.Request
+        )
+
+        request = {
+            'grant_type': 'authorization_code',
+        }
+        self.assertIs(
+            inst.detect_request_class(request),
+            authorizationcodegrant.AccessTokenRequest
+        )
+
+        request = {
+            'grant_type': 'id_token',
+        }
+        self.assertIsNone(inst.detect_request_class(request))
+
+        request = {
+            'response_type': 'code',
+        }
+        self.assertIs(
+            inst.detect_request_class(request),
+            authorizationcodeflow.AuthenticationRequest
+        )
+
+        request = {
+            'response_type': 'code id_token',
+        }
+        self.assertIs(
+            inst.detect_request_class(request),
+            hybridflow.AuthenticationRequest
+        )
+
+        request = {
+            'response_type': 'code token',
+        }
+        self.assertIs(
+            inst.detect_request_class(request),
+            hybridflow.AuthenticationRequest
+        )
+
+        request = {
+            'response_type': 'code id_token token',
+        }
+        self.assertIs(
+            inst.detect_request_class(request),
+            hybridflow.AuthenticationRequest
+        )
+
+        request = {
+            'response_type': 'code id_token refresh_token',
+        }
+        self.assertIsNone(inst.detect_request_class(request))
+
+        request = {
+            'response_type': 'id_token',
+        }
+        self.assertIs(
+            inst.detect_request_class(request),
+            implicitflow.Request
+        )
+
+        request = {
+            'response_type': 'id_token token',
+        }
+        self.assertIs(
+            inst.detect_request_class(request),
+            implicitflow.Request
+        )
+
+        request = {
+            'response_type': 'id_token token refresh_token',
+        }
+        self.assertIsNone(inst.detect_request_class(request))
+
+        request = {}
+        self.assertIsNone(inst.detect_request_class(request))
 
 
 class TestUserInfoProvider(unittest.TestCase):
