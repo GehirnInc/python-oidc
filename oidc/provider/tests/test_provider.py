@@ -33,7 +33,7 @@ class TestAuthorizationProvider(unittest.TestCase):
         self.store = Store()
 
     def test_detect_request_class(self):
-        inst = AuthorizationProvider(self.store)
+        inst = AuthorizationProvider(self.store, 'https://example.com/')
         request = {
             'grant_type': 'refresh_token',
         }

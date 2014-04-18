@@ -1,7 +1,5 @@
 # -*- coding: utf-8- -*-
 
-import json
-
 from py3oauth2.provider import (
     authorizationcodegrant,
     AuthorizationProvider as BaseAuthorizationProvider,
@@ -19,8 +17,12 @@ from . import (
 
 class AuthorizationProvider(BaseAuthorizationProvider):
 
-    def __init__(self, store):
+    def __init__(self, store, iss):
         super(AuthorizationProvider, self).__init__(store)
+        self.iss = iss
+
+    def get_iss(self):
+        return self.iss
 
     def detect_request_class(self, request):
         if 'grant_type' in request:
