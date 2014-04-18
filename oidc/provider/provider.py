@@ -6,7 +6,10 @@ from py3oauth2.provider import (
     refreshtokengrant,
     ResourceProvider,
 )
-from py3oauth2.provider.exceptions import AccessDenied
+from py3oauth2.provider.exceptions import (
+    AccessDenied,
+    ErrorResponse,
+)
 
 from . import (
     authorizationcodeflow,
@@ -17,9 +20,10 @@ from . import (
 
 class AuthorizationProvider(BaseAuthorizationProvider):
 
-    def __init__(self, store, iss):
+    def __init__(self, store, iss, jwt):
         super(AuthorizationProvider, self).__init__(store)
         self.iss = iss
+        self.jwt = jwt
 
     def get_iss(self):
         return self.iss
@@ -42,6 +46,26 @@ class AuthorizationProvider(BaseAuthorizationProvider):
                 return implicitflow.Request
 
         return None
+
+    def handle_request(self, request, owner,
+                       sign_jwt=True, sign_alg='HS256', sign_kid=None,
+                       encrypt_jwt=False, encrypt_alg='RSA1_5',
+                       encrypt_enc='A128CBC-HS256', encrypt_kid=None):
+        try:
+            response = request.answer(self, owner)
+            response.validate()
+        except BaseException as why:
+            response = request.err_response(request)
+            response.error = 'server_error'
+            raise ErrorResponse(response) from why
+        else:
+            if hasattr(response, 'id_token') and response.id_token:
+                response.id_token.bind(
+                    self.jwt, sign_jwt, sign_alg, sign_kid,
+                    encrypt_jwt, encrypt_alg, encrypt_enc, encrypt_kid
+                )
+
+            return response
 
 
 class UserInfoProvider(ResourceProvider):

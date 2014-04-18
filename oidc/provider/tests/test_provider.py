@@ -9,6 +9,8 @@ from py3oauth2.provider import (
     refreshtokengrant,
     authorizationcodegrant,
 )
+from jwt import JWT
+from jwt.jws import JWS
 
 from ..provider import (
     AuthorizationProvider,
@@ -31,9 +33,11 @@ class TestAuthorizationProvider(unittest.TestCase):
 
     def setUp(self):
         self.store = Store()
+        self.jwt = JWT(JWS())
 
     def test_detect_request_class(self):
-        inst = AuthorizationProvider(self.store, 'https://example.com/')
+        inst = AuthorizationProvider(self.store, 'https://example.com/',
+                                     self.jwt)
         request = {
             'grant_type': 'refresh_token',
         }
