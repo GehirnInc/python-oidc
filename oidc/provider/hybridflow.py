@@ -22,13 +22,13 @@ def is_chash_required(idtoken):
 
 
 def is_access_token_required(resp):
-    # TODO: implement this
-    return False
+    types = set(resp.request.response_type.split())
+    return 'token' in types
 
 
-def id_token_required(resp):
-    # TODO: implement this
-    return False
+def is_id_token_required(resp):
+    types = set(resp.request.response_type.split())
+    return 'id_token' in types
 
 
 class IDToken(BaseIDToken):
@@ -42,9 +42,10 @@ class AuthenticationResponse(BaseAuthenticationResponse):
 
     # OAuth2.0 parameters
     access_token = Parameter(str, required=is_access_token_required)
+    token_type = Parameter(str, required=is_access_token_required)
     code = Parameter(str, required=True)
 
-    id_token = Parameter(str, required=id_token_required)
+    id_token = Parameter(IDToken, required=is_id_token_required)
 
 
 class AuthenticationRequest(BaseAuthenticationRequest):
