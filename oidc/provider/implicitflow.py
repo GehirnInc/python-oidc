@@ -12,8 +12,7 @@ __all__ = ['IDToken', 'Request', 'Response']
 
 
 def is_access_token_required(resp):
-    # TODO: implement this
-    return False
+    return resp.request.response_type != 'id_token'
 
 
 class IDToken(BaseIDToken):
@@ -29,7 +28,7 @@ class Response(BaseResponse):
     # NOTES: needs `scope`?
 
     # OpenID Connect parameters
-    id_token = Parameter(str, required=True)
+    id_token = Parameter(IDToken, required=True)
 
 
 class Request(BaseRequest):
