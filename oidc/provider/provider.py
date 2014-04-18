@@ -31,7 +31,7 @@ class AuthorizationProvider(BaseAuthorizationProvider):
         elif 'response_type' in request:
             response_type = set(request['response_type'].split())
             if 'code' in response_type:
-                if response_type is {'code'}:
+                if response_type == {'code'}:
                     return authorizationcodeflow.AuthenticationRequest
                 elif response_type.issubset({'code', 'id_token', 'token'}):
                     return hybridflow.AuthenticationRequest
@@ -67,7 +67,7 @@ class UserInfoProvider(ResourceProvider):
         except AccessDenied:
             raise  # TODO: return error response
         else:
-            if scopes is {'openid'}:
+            if scopes == {'openid'}:
                 scopes = set(token.get_scope().split())
 
             owner = token.get_owner()
