@@ -82,8 +82,11 @@ class AuthenticationRequest(BaseAuthenticationRequest):
                     response.expires_in = token.get_expires_in()
 
                 if 'id_token' in response_types:
-                    # TODO: implement here
-                    response.id_token = IDToken()
+                    response.id_token = self.response.__id_token_class__.issue(
+                        provider, client, owner
+                    )
+                    response.id_token.nonce = self.nonce
+                    response.id_token.validate()
             except message.RequestError:
                 raise
             except:

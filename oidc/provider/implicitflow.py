@@ -29,7 +29,7 @@ class Response(BaseResponse):
     # NOTES: needs `scope`?
 
     # OpenID Connect parameters
-    id_token = message.Parameter(IDToken, required=True)
+    id_token = message.Parameter(__id_token_class__, required=True)
 
 
 class Request(BaseRequest):
@@ -49,8 +49,14 @@ class Request(BaseRequest):
                 if client is None or not provider.authorize_client(client):
                     raise message.UnauthorizedClient()
 
+                id_token = self.response.__id_token_class__.issue(
+                    provider, owner, client
+                )
+                id_token.nonce = self.nonce
+                id_token.validate()
+
                 response = self.response.from_dict(self, {
-                    'id_token': self.response.__id_token_class__(),  # TODO
+                    'id_token': id_token,
                     'state': self.state,
                 })
 
