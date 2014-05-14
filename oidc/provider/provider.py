@@ -1,15 +1,10 @@
 # -*- coding: utf-8- -*-
 
 from py3oauth2.provider import (
-    authorizationcodegrant,
     AuthorizationProvider as BaseAuthorizationProvider,
-    refreshtokengrant,
     ResourceProvider,
 )
-from py3oauth2.provider.exceptions import (
-    AccessDenied,
-    ErrorResponse,
-)
+from py3oauth2.provider.exceptions import AccessDenied
 
 from . import (
     authorizationcodeflow,
@@ -20,52 +15,46 @@ from . import (
 
 class AuthorizationProvider(BaseAuthorizationProvider):
 
+    def __new__(cls, *args, **kwargs):
+        cls.add_authorization_handler(
+            {'code'}, authorizationcodeflow.AuthenticationRequest)
+
+        cls.add_authorization_handler(
+            {'code', 'token'}, hybridflow.AuthenticationRequest)
+        cls.add_authorization_handler(
+            {'code', 'id_token'}, hybridflow.AuthenticationRequest)
+        cls.add_authorization_handler(
+            {'code', 'id_token', 'token'}, hybridflow.AuthenticationRequest)
+
+        cls.add_authorization_handler(
+            {'id_token'}, implicitflow.Request)
+        cls.add_authorization_handler(
+            {'id_token', 'token'}, implicitflow.Request)
+
+        return super().__new__(cls, *args, **kwargs)
+
     def __init__(self, store, iss, jwt):
         super(AuthorizationProvider, self).__init__(store)
+
         self.iss = iss
         self.jwt = jwt
 
     def get_iss(self):
         return self.iss
 
-    def detect_request_class(self, request):
-        if 'grant_type' in request:
-            if request['grant_type'] == 'refresh_token':
-                return refreshtokengrant.Request
-            elif request['grant_type'] == 'authorization_code':
-                return authorizationcodegrant.AccessTokenRequest
-        elif 'response_type' in request:
-            response_type = set(request['response_type'].split())
-            if 'code' in response_type:
-                if response_type == {'code'}:
-                    return authorizationcodeflow.AuthenticationRequest
-                elif response_type.issubset({'code', 'id_token', 'token'}):
-                    return hybridflow.AuthenticationRequest
-            elif 'id_token' in response_type\
-                    and response_type.issubset({'id_token', 'token'}):
-                return implicitflow.Request
-
-        return None
-
     def handle_request(self, request, owner,
                        sign_jwt=True, sign_alg='HS256', sign_kid=None,
                        encrypt_jwt=False, encrypt_alg='RSA1_5',
                        encrypt_enc='A128CBC-HS256', encrypt_kid=None):
-        try:
-            response = request.answer(self, owner)
-            response.validate()
-        except BaseException as why:
-            response = request.err_response(request)
-            response.error = 'server_error'
-            raise ErrorResponse(response) from why
-        else:
-            if hasattr(response, 'id_token') and response.id_token:
-                response.id_token.bind(
-                    self.jwt, sign_jwt, sign_alg, sign_kid,
-                    encrypt_jwt, encrypt_alg, encrypt_enc, encrypt_kid
-                )
 
-            return response
+        response = super().handle_request(request, owner)
+        if hasattr(response, 'id_token') and response.id_token:
+            response.id_token.bind(
+                self.jwt, sign_jwt, sign_alg, sign_kid,
+                encrypt_jwt, encrypt_alg, encrypt_enc, encrypt_kid
+            )
+
+        return response
 
 
 class UserInfoProvider(ResourceProvider):
