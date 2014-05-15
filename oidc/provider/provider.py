@@ -15,29 +15,26 @@ from . import (
 
 class AuthorizationProvider(BaseAuthorizationProvider):
 
-    def __new__(cls, *args, **kwargs):
-        cls.add_authorization_handler(
-            {'code'}, authorizationcodeflow.AuthenticationRequest)
-
-        cls.add_authorization_handler(
-            {'code', 'token'}, hybridflow.AuthenticationRequest)
-        cls.add_authorization_handler(
-            {'code', 'id_token'}, hybridflow.AuthenticationRequest)
-        cls.add_authorization_handler(
-            {'code', 'id_token', 'token'}, hybridflow.AuthenticationRequest)
-
-        cls.add_authorization_handler(
-            {'id_token'}, implicitflow.Request)
-        cls.add_authorization_handler(
-            {'id_token', 'token'}, implicitflow.Request)
-
-        return super().__new__(cls, *args, **kwargs)
-
     def __init__(self, store, iss, jwt):
         super(AuthorizationProvider, self).__init__(store)
 
         self.iss = iss
         self.jwt = jwt
+
+        self.add_authorization_handler(
+            ('code', ), authorizationcodeflow.AuthenticationRequest)
+
+        self.add_authorization_handler(
+            ('code', 'token'), hybridflow.AuthenticationRequest)
+        self.add_authorization_handler(
+            ('code', 'id_token'), hybridflow.AuthenticationRequest)
+        self.add_authorization_handler(
+            ('code', 'id_token', 'token'), hybridflow.AuthenticationRequest)
+
+        self.add_authorization_handler(
+            ('id_token', ), implicitflow.Request)
+        self.add_authorization_handler(
+            ('id_token', 'token'), implicitflow.Request)
 
     def get_iss(self):
         return self.iss

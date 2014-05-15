@@ -25,6 +25,7 @@ class AuthenticationRequest(AuthorizationRequest):
     response = AuthenticationResponse
 
     # OAuth2.0 parameters
+    response_type = message.Parameter(str, required=True)
     scope = message.Parameter(str, required=True)
     redirect_uri = message.Parameter(str, required=True)
 
