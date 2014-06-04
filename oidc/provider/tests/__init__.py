@@ -1,8 +1,13 @@
 # -*- coding: utf-8 -*-
 
-from datetime import datetime
+import base64
+import os
+from datetime import (
+    datetime,
+    timedelta,
+)
 
-from py3oauth2.provider.interfaces import (
+from py3oauth2.interfaces import (
     IAccessToken,
     IAuthorizationCode,
     IClient,
@@ -32,14 +37,13 @@ class Client(IClient):
 
 class AccessToken(IAccessToken):
 
-    def __init__(self, client, owner, token, expires_in, scope,
-                 refresh_token=None):
+    def __init__(self, client, owner, scope, expires_in):
         self.client = client
         self.owner = owner
-        self.token = token
+        self.token = base64.b64encode(os.urandom(16)).decode('utf8')
         self.expires_in = expires_in
         self.scope = scope
-        self.refresh_token = refresh_token
+        self.refresh_token = base64.b64encode(os.urandom(16)).decode('utf8')
         self.issued_at = datetime.utcnow()
 
     def get_client(self):
@@ -57,22 +61,22 @@ class AccessToken(IAccessToken):
     def get_expires_in(self):
         return self.expires_in
 
+    def get_expires_at(self):
+        return self.issued_at + timedelta(seconds=self.get_expires_in())
+
     def get_scope(self):
         return self.scope
 
     def get_refresh_token(self):
         return self.refresh_token
 
-    def get_issued_at(self):
-        return self.issued_at
-
 
 class AuthorizationCode(IAuthorizationCode):
 
-    def __init__(self, client, owner, code, scope):
+    def __init__(self, client, owner, scope):
         self.client = client
         self.owner = owner
-        self.code = code
+        self.code = base64.b64encode(os.urandom(16)).decode('utf8')
         self.scope = scope
         self.used = False
 
@@ -109,12 +113,12 @@ class Store(IStore):
     def get_client(self, client_id):
         return self.clients.get(client_id)
 
-    def persist_access_token(self, client, owner, token, scope, refresh_token):
-        tokenobj =\
-            AccessToken(client, owner, token, 3600, scope, refresh_token)
+    def issue_access_token(self, client, owner, scope):
+        tokenobj = AccessToken(client, owner, scope, 3600)
         self.access_tokens[tokenobj.get_token()] = tokenobj
         if tokenobj.get_refresh_token():
             self.refresh_tokens[tokenobj.get_refresh_token()] = tokenobj
+
         return tokenobj
 
     def discard_access_token(self, token):
@@ -126,19 +130,10 @@ class Store(IStore):
     def get_access_token_by_refresh_token(self, refresh_token):
         return self.refresh_tokens.get(refresh_token)
 
-    def get_access_token_length(self):
-        return 40
-
-    def get_refresh_token_length(self):
-        return 40
-
-    def persist_authorization_code(self, client, owner, code, scope):
-        codeobj = AuthorizationCode(client, owner, code, scope)
+    def issue_authorization_code(self, client, owner, scope):
+        codeobj = AuthorizationCode(client, owner, scope)
         self.authorization_codes[codeobj.get_code()] = codeobj
         return codeobj
 
     def get_authorization_code(self, code):
         return self.authorization_codes.get(code)
-
-    def get_authorization_code_length(self):
-        return 40

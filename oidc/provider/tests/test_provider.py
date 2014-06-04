@@ -1,26 +1,12 @@
 # -*- coding: utf-8 -*-
 
-import random
-import string
 import unittest
 import uuid
 
-from py3oauth2.provider import (
-    refreshtokengrant,
-    authorizationcodegrant,
-)
 from jwt import JWT
 from jwt.jws import JWS
 
-from ..provider import (
-    AuthorizationProvider,
-    UserInfoProvider
-)
-from .. import (
-    authorizationcodeflow,
-    hybridflow,
-    implicitflow,
-)
+from ..provider import UserInfoProvider
 from ...userinfo import UserInfo
 from . import (
     Client,
@@ -35,15 +21,9 @@ class TestUserInfoProvider(unittest.TestCase):
         self.store = Store()
 
         client = Client(str(uuid.uuid4()))
-
         self.user_info = UserInfo()
         owner = Owner(str(uuid.uuid4()), self.user_info)
-
-        pool = string.ascii_letters + string.digits
-        token = ''.join(random.choice(pool) for _ in range(40))
-        self.token = self.store.persist_access_token(
-            client, owner, token, 'openid', '',
-        )
+        self.token = self.store.issue_access_token(client, owner, {'openid'})
 
     def test_get_access_token(self):
         inst = UserInfoProvider(self.store, {

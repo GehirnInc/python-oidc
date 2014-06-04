@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 
-from py3oauth2.provider.message import (
-    Parameter,
-    RequestError,
+from py3oauth2.errors import (
+    ErrorException,
     ServerError,
 )
+from py3oauth2.message import Parameter
 
 from ..idtoken import IDToken as BaseIDToken
 from .authorizationcodeflow import (
@@ -59,33 +59,25 @@ class AuthenticationRequest(BaseAuthenticationRequest):
             response_types = set(self.response_type.split())
             if 'id_token' in response_types:
                 response = super().answer(provider, owner)
-                if isinstance(response, self.err_response):
-                    return response
 
                 response.id_token.nonce = self.nonce
             else:
                 response = super(
                     BaseAuthenticationRequest, self
                 ).answer(provider, owner)
-                if isinstance(response, self.err_response):
-                    return response
 
             if 'token' in response_types:
                 client = provider.store.get_client(self.client_id)
-                token = provider.store.persist_access_token(
-                    client, owner, provider.generate_access_token(),
-                    self.scope, None)
+                token = provider.store.issue_access_token(
+                    client, owner, provider.normalize_scope(self.scope))
                 response.access_token = token.get_token()
                 response.token_type = token.get_type()
-                response.scope = token.get_scope()
+                response.scope = ' '.join(token.get_scope())
                 response.expires_in = token.get_expires_in()
-
-            return response
         except BaseException as why:
-            if not isinstance(why, RequestError):
-                why = ServerError()
+            if isinstance(why, ErrorException):
+                raise
 
-            resp = self.err_response(self)
-            resp.error = why.kind
-            resp.state = self.state
-            return resp
+            raise ServerError() from why
+        else:
+            return response

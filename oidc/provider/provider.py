@@ -1,10 +1,10 @@
 # -*- coding: utf-8- -*-
 
+from py3oauth2.errors import AccessDenied
 from py3oauth2.provider import (
     AuthorizationProvider as BaseAuthorizationProvider,
     ResourceProvider,
 )
-from py3oauth2.provider.exceptions import AccessDenied
 
 from . import (
     authorizationcodeflow,
@@ -38,6 +38,9 @@ class AuthorizationProvider(BaseAuthorizationProvider):
 
     def get_iss(self):
         return self.iss
+
+    def decode_authenticateion_request(self, request_dict):
+        return self.decode_authorization_request(request_dict)
 
     def handle_request(self, request, owner,
                        sign_jwt=True, sign_alg='HS256', sign_kid=None,
@@ -80,7 +83,7 @@ class UserInfoProvider(ResourceProvider):
             raise  # TODO: return error response
         else:
             if scopes == {'openid'}:
-                scopes = set(token.get_scope().split())
+                scopes = token.get_scope()
 
             owner = token.get_owner()
             user_info = owner.get_user_info(scopes)

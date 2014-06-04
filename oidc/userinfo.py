@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from py3oauth2.provider.message import (
+from py3oauth2.message import (
     Message,
     Parameter,
 )

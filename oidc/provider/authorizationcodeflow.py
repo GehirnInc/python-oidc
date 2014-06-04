@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 
-from py3oauth2.provider.authorizationcodegrant import (
+from py3oauth2 import message
+from py3oauth2.authorizationcodegrant import (
     AuthorizationRequest,
     AuthorizationResponse,
 )
-from py3oauth2.provider import message
 
 from ..idtoken import IDToken as BaseIDToken
 
@@ -44,8 +44,6 @@ class AuthenticationRequest(AuthorizationRequest):
 
     def answer(self, provider, owner):
         resp = super().answer(provider, owner)
-        if isinstance(resp, self.err_response):
-            return resp
 
         client = provider.store.get_client(self.client_id)
         resp.id_token =\

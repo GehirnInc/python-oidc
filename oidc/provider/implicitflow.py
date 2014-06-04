@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 
-from py3oauth2.provider.implicitgrant import (
-    Response as BaseResponse,
-)
-from py3oauth2.provider import message
+from py3oauth2 import message
+from py3oauth2.errors import UnauthorizedClient
+from py3oauth2.interfaces import IClient
+from py3oauth2.implicitgrant import Response as BaseResponse
 
 from ..idtoken import IDToken as BaseIDToken
 from .authorizationcodeflow import (
@@ -40,8 +40,9 @@ class Request(BaseRequest):
 
     def answer(self, provider, owner):
         client = provider.store.get_client(self.client_id)
-        if client is None or not provider.authorize_client(client):
-            raise message.UnauthorizedClient()
+        if not isinstance(client, IClient)\
+                or not provider.authorize_client(client):
+            raise UnauthorizedClient()
 
         redirect_uri = self.redirect_uri or client.redirect_uri
         if not redirect_uri:
@@ -59,13 +60,11 @@ class Request(BaseRequest):
         response.id_token = id_token
 
         if self.response_type != 'id_token':
-            token = provider.store.persist_access_token(
-                client, owner, provider.generate_access_token(),
-                self.scope, None
-            )
+            token = provider.store.issue_access_token(
+                client, owner, provider.normalize_scope(self.scope))
             response.access_token = token.get_token()
             response.token_type = token.get_type()
-            response.scope = token.get_scope()
+            response.scope = ' '.join(token.get_scope())
             response.expires_in = token.get_expires_in()
 
         return response

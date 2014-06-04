@@ -6,7 +6,7 @@ from setuptools import setup, find_packages
 
 here = os.path.dirname(__file__)
 requires = [
-    'py3oauth2>=0.2.2',
+    'py3oauth2==0.3.3',
     'jwt>=0.1.1',
 ]
 tests_require = [
