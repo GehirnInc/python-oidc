@@ -6,7 +6,7 @@ from py3oauth2.provider import (
     ResourceProvider,
 )
 
-from . import (
+from oidc import (
     authorizationcodeflow,
     hybridflow,
     implicitflow,

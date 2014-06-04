@@ -6,7 +6,7 @@ from py3oauth2.authorizationcodegrant import (
     AuthorizationResponse,
 )
 
-from ..idtoken import IDToken as BaseIDToken
+from oidc.idtoken import IDToken as BaseIDToken
 
 __all__ = ['IDToken', 'AuthenticationResponse', 'AuthenticationRequest']
 

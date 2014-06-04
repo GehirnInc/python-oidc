@@ -13,7 +13,8 @@ from py3oauth2.interfaces import (
     IClient,
     IStore,
 )
-from ..interfaces import IOwner
+
+from oidc.interfaces import IOwner
 
 
 class Owner(IOwner):

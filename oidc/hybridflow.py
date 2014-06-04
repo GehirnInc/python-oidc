@@ -6,11 +6,11 @@ from py3oauth2.errors import (
 )
 from py3oauth2.message import Parameter
 
-from ..idtoken import IDToken as BaseIDToken
-from .authorizationcodeflow import (
+from oidc.idtoken import IDToken as BaseIDToken
+from oidc.authorizationcodeflow import (
     AuthenticationRequest as BaseAuthenticationRequest,
 )
-from .implicitflow import Response as BaseAuthenticationResponse
+from oidc.implicitflow import Response as BaseAuthenticationResponse
 
 
 def is_at_hash_required(idtoken):

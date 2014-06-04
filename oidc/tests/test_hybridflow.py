@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from ..hybridflow import (
+from oidc.hybridflow import (
     AuthenticationRequest,
     AuthenticationResponse,
     IDToken,

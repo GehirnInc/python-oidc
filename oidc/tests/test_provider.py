@@ -6,9 +6,9 @@ import uuid
 from jwt import JWT
 from jwt.jws import JWS
 
-from ..provider import UserInfoProvider
-from ...userinfo import UserInfo
-from . import (
+from oidc.provider import UserInfoProvider
+from oidc.userinfo import UserInfo
+from oidc.tests import (
     Client,
     Owner,
     Store,

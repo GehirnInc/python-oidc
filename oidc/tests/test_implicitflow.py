@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from ..implicitflow import (
+from oidc.implicitflow import (
     is_access_token_required,
     IDToken,
     Request,

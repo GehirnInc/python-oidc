@@ -5,8 +5,8 @@ from py3oauth2.errors import UnauthorizedClient
 from py3oauth2.interfaces import IClient
 from py3oauth2.implicitgrant import Response as BaseResponse
 
-from ..idtoken import IDToken as BaseIDToken
-from .authorizationcodeflow import (
+from oidc.idtoken import IDToken as BaseIDToken
+from oidc.authorizationcodeflow import (
     AuthenticationRequest as BaseRequest,
 )
 
