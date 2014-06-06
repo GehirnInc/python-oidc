@@ -84,7 +84,8 @@ class IDToken(Message):
     @classmethod
     def issue(cls, provider, owner, client):
         iat = datetime.utcnow()
-        inst = cls.from_dict({
+        inst = cls()
+        inst.update({
             'iss': provider.get_iss(),
             'sub': owner.get_sub(),
             'aud': ListOrString.deserialize(client.get_id()),

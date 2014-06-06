@@ -16,20 +16,24 @@ def test_is_access_token_required():
         'redirect_uri': 'https://example.com/cb',
         'nonce': 'nonce',
     }
-    request = Request.from_dict(reqdict)
+    request = Request()
+    request.update(reqdict)
 
     respdict = {
         'access_token': 'access_token',
         'token_type': 'bearer',
         'id_token': IDToken(),
     }
-    response = Response.from_dict(request, respdict)
+    response = Response(request)
+    response.update(respdict)
     assert is_access_token_required(response) is True
 
     # response_type = id_token
     reqdict['response_type'] = 'id_token'
-    request = Request.from_dict(reqdict)
+    request = Request()
+    request.update(reqdict)
 
     del respdict['access_token']
-    response = Response.from_dict(request, respdict)
+    response = Response(request)
+    response.update(respdict)
     assert is_access_token_required(response) is False
