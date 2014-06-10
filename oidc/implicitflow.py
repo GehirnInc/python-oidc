@@ -40,8 +40,7 @@ class Request(BaseRequest):
 
     def answer(self, provider, owner):
         client = provider.store.get_client(self.client_id)
-        if not isinstance(client, IClient)\
-                or not provider.authorize_client(client):
+        if not isinstance(client, IClient):
             raise UnauthorizedClient()
 
         redirect_uri = self.redirect_uri or client.redirect_uri
