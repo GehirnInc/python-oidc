@@ -1,90 +1,124 @@
 # -*- coding: utf-8 -*-
 
-from oidc.hybridflow import (
-    AuthenticationRequest,
-    AuthenticationResponse,
-    IDToken,
-    is_access_token_required,
-    is_id_token_required,
+import json
+
+from jwt.jwt import JWT
+
+from oidc.tests import (
+    mock,
+    TestBase,
 )
 
 
-def test_response_validators_code():
-    # response_type = code
-    reqdict = {
-        'client_id': 'client_id',
-        'response_type': 'code',
-        'redirect_uri': 'https://example.com/cb',
-    }
-    request = AuthenticationRequest()
-    request.update(reqdict)
+class AuthenticationRequestTest(TestBase):
 
-    respdict = {
-        'code': 'code',
-    }
-    response = AuthenticationResponse(request)
-    response.update(respdict)
-    assert is_access_token_required(response) is False
-    assert is_id_token_required(response) is False
+    @property
+    def target(self):
+        from oidc.hybridflow import AuthenticationRequest
+        return AuthenticationRequest
 
+    def test_answer_with_token(self):
+        inst = self.target()
+        inst.update({
+            'client_id': self.client.id,
+            'redirect_uri': self.client.get_redirect_uri(),
+            'response_type': 'code token',
+            'scope': 'openid profile',
+            'nonce': 'noncestring',
+            'state': 'statestring',
+        })
+        inst.validate()
 
-def test_response_validators_code_id_token():
-    # response_type = code id_token
-    reqdict = {
-        'client_id': 'client_id',
-        'response_type': 'code id_token',
-        'redirect_uri': 'https://example.com/cb',
-    }
-    request = AuthenticationRequest()
-    request.update(reqdict)
+        resp = inst.answer(self.provider, self.owner)
+        resp.validate()
 
-    respdict = {
-        'code': 'code',
-        'id_token': IDToken(),
-    }
-    response = AuthenticationResponse(request)
-    response.update(respdict)
-    assert is_access_token_required(response) is False
-    assert is_id_token_required(response) is True
+        token = self.store.get_access_token(resp.access_token)
+        self.assertEqual(resp.token_type, token.get_type())
+        self.assertEqual(resp.scope, ' '.join(token.get_scope()))
+        self.assertEqual(resp.expires_in, token.get_expires_in())
 
+        self.assertEqual(resp.state, 'statestring')
 
-def test_response_validators_code_token():
-    # response_type = code token
-    reqdict = {
-        'client_id': 'client_id',
-        'response_type': 'code token',
-        'redirect_uri': 'https://example.com/cb',
-    }
-    request = AuthenticationRequest()
-    request.update(reqdict)
+    def test_answer_with_idtoken(self):
+        inst = self.target()
+        inst.update({
+            'client_id': self.client.id,
+            'redirect_uri': self.client.get_redirect_uri(),
+            'response_type': 'code id_token',
+            'scope': 'openid profile',
+            'nonce': 'noncestring',
+            'state': 'statestring',
+        })
+        inst.validate()
 
-    respdict = {
-        'code': 'code',
-        'token': 'access_token',
-    }
-    response = AuthenticationResponse(request)
-    response.update(respdict)
-    assert is_access_token_required(response) is True
-    assert is_id_token_required(response) is False
+        resp = inst.answer(self.provider, self.owner)
+        resp.validate()
 
+        self.assertEqual(resp.state, 'statestring')
 
-def test_response_validators_code_id_token_token():
-    # response_type = code id_token token
-    reqdict = {
-        'client_id': 'client_id',
-        'response_type': 'code id_token token',
-        'redirect_uri': 'https://example.com/cb',
-    }
-    request = AuthenticationRequest()
-    request.update(reqdict)
+        jwt = JWT(self.jwkset.copy())
+        self.assertTrue(jwt.verify(resp.id_token))
 
-    respdict = {
-        'code': 'code',
-        'id_token': IDToken(),
-        'access_token': 'access_token',
-        'token_type': 'bearer',
-    }
-    response = AuthenticationResponse(request)
-    response.update(respdict)
-    assert is_access_token_required(response) is True
-    assert is_id_token_required(response) is True
+        id_token = json.loads(jwt.decode(resp.id_token).decode('utf8'))
+        self.assertEqual(id_token['nonce'], 'noncestring')
+        self.assertEqual(id_token['c_hash'],
+                         self.provider.left_hash(self.client.get_jws_alg(),
+                                                 resp.code))
+
+    def test_answer_with_token_and_idtoken(self):
+        inst = self.target()
+        inst.update({
+            'client_id': self.client.id,
+            'redirect_uri': self.client.get_redirect_uri(),
+            'response_type': 'code token id_token',
+            'scope': 'openid profile',
+            'nonce': 'noncestring',
+            'state': 'statestring',
+        })
+        inst.validate()
+
+        resp = inst.answer(self.provider, self.owner)
+        resp.validate()
+
+        self.assertEqual(resp.state, 'statestring')
+
+        token = self.store.get_access_token(resp.access_token)
+        self.assertEqual(resp.token_type, token.get_type())
+        self.assertEqual(resp.scope, ' '.join(token.get_scope()))
+        self.assertEqual(resp.expires_in, token.get_expires_in())
+
+        jwt = JWT(self.jwkset.copy())
+        self.assertTrue(jwt.verify(resp.id_token))
+
+        id_token = json.loads(jwt.decode(resp.id_token).decode('utf8'))
+        self.assertEqual(id_token['nonce'], 'noncestring')
+        self.assertEqual(id_token['c_hash'],
+                         self.provider.left_hash(self.client.get_jws_alg(),
+                                                 resp.code))
+        self.assertEqual(id_token['at_hash'],
+                         self.provider.left_hash(self.client.get_jws_alg(),
+                                                 token.get_token()))
+
+    def test_answer_server_error(self):
+        from oidc.errors import ServerError
+
+        inst = self.target()
+        inst.update({
+            'client_id': self.client.id,
+            'redirect_uri': self.client.get_redirect_uri(),
+            'response_type': 'code token',
+            'scope': 'openid profile',
+            'nonce': 'noncestring',
+            'state': 'statestring',
+        })
+        inst.validate()
+
+        try:
+            with mock.patch.object(self.store, 'issue_access_token',
+                                   side_effect=ServerError):
+                inst.answer(self.provider, self.owner)
+        except ServerError as why:
+            self.assertIs(why.request, inst)
+            self.assertEqual(why.redirect_uri, self.client.get_redirect_uri())
+        else:
+            self.fail()

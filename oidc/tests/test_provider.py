@@ -1,29 +1,17 @@
 # -*- coding: utf-8 -*-
 
-import unittest
-import uuid
-
-from jwt import JWT
-from jwt.jws import JWS
-
 from oidc.provider import UserInfoProvider
-from oidc.userinfo import UserInfo
-from oidc.tests import (
-    Client,
-    Owner,
-    Store,
-)
+from oidc.tests import TestBase
 
 
-class TestUserInfoProvider(unittest.TestCase):
+class TestUserInfoProvider(TestBase):
 
     def setUp(self):
-        self.store = Store()
+        super().setUp()
 
-        client = Client(str(uuid.uuid4()))
-        self.user_info = UserInfo()
-        owner = Owner(str(uuid.uuid4()), self.user_info)
-        self.token = self.store.issue_access_token(client, owner, {'openid'})
+        self.token = self.store.issue_access_token(self.client,
+                                                   self.owner,
+                                                   {'openid'})
 
     def test_get_access_token(self):
         inst = UserInfoProvider(self.store, {

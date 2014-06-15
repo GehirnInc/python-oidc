@@ -2,28 +2,16 @@
 
 from py3oauth2 import message
 from py3oauth2.authorizationcodegrant import (
+    AccessTokenRequest,
     AuthorizationRequest,
-    AuthorizationResponse,
 )
 
 from oidc.idtoken import IDToken as BaseIDToken
 
-__all__ = ['IDToken', 'AuthenticationResponse', 'AuthenticationRequest']
-
-
-class IDToken(BaseIDToken):
-    at_hash = message.Parameter(str)
-
-
-class AuthenticationResponse(AuthorizationResponse):
-    __id_token_class__ = IDToken
-
-    id_token = message.Parameter(__id_token_class__, required=True)
+__all__ = ['IDToken', 'AuthenticationRequest', 'AccessTokenRequest']
 
 
 class AuthenticationRequest(AuthorizationRequest):
-    response = AuthenticationResponse
-
     # OAuth2.0 parameters
     response_type = message.Parameter(str, required=True)
     scope = message.Parameter(str, required=True)
@@ -42,9 +30,31 @@ class AuthenticationRequest(AuthorizationRequest):
     login_hint = message.Parameter(str)
     acr_values = message.Parameter(str)
 
+
+class AccessTokenResponse(message.AccessTokenResponse):
+    id_token = message.Parameter(str, required=True)
+
+
+class IDToken(BaseIDToken):
+    at_hash = message.Parameter(str)
+
+
+class AccessTokenRequest(AccessTokenRequest):
+    response = AccessTokenResponse
+    id_token = IDToken
+
     def answer(self, provider, owner):
-        resp = super().answer(provider, owner)
+        response = super(AccessTokenRequest, self).answer(provider, owner)
 
         client = provider.store.get_client(self.client_id)
-        resp.id_token =\
-            self.__id_token_class__.issue(provider, owner, client)
+        id_token = self.id_token(response,
+                                 provider.get_iss(),
+                                 owner.get_sub(),
+                                 client.get_id(),
+                                 provider.get_id_token_lifetime())
+        id_token.at_hash = provider.left_hash(client.get_jws_alg(),
+                                              response.access_token)
+        response.id_token =\
+            provider.encode_token(id_token, client, response.access_token)
+
+        return response
