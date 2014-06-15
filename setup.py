@@ -25,7 +25,7 @@ license = _read("LICENSE.rst")
 
 setup(
     name='oidc',
-    version='0.0.1',
+    version='0.1.1',
     test_suite='oidc',
     author='Kohei YOSHIDA',
     author_email='kohei.yoshida@gehirn.co.jp',
@@ -37,7 +37,7 @@ setup(
     install_requires=requires,
     tests_require=tests_require,
     classifiers=[
-        "Development Status :: 2 - Pre-Alpha",
+        "Development Status :: 3 - Alpha",
         "Intended Audience :: Developers",
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
