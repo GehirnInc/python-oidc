@@ -47,9 +47,10 @@ class AccessTokenRequest(AccessTokenRequest):
         response = super(AccessTokenRequest, self).answer(provider, owner)
 
         client = provider.store.get_client(self.client_id)
+        access_token = provider.store.get_access_token(response.access_token)
         id_token = self.id_token(response,
                                  provider.get_iss(),
-                                 owner.get_sub(),
+                                 access_token.get_owner().get_sub(),
                                  client.get_id(),
                                  provider.get_id_token_lifetime())
         id_token.at_hash = provider.left_hash(client.get_jws_alg(),
