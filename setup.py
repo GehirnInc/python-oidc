@@ -25,7 +25,7 @@ license = _read("LICENSE.rst")
 
 setup(
     name='oidc',
-    version='0.1.2',
+    version='0.1.3',
     test_suite='oidc',
     author='Kohei YOSHIDA',
     author_email='kohei.yoshida@gehirn.co.jp',
