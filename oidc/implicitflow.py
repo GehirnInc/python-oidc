@@ -42,10 +42,10 @@ class Request(AuthenticationRequest):
     def answer(self, provider, owner):
         client = provider.store.get_client(self.client_id)
         if not isinstance(client, IClient):
-            raise UnauthorizedClient(self, self.redirect_uri)
+            raise UnauthorizedClient(self)
 
         if not provider.validate_redirect_uri(client, self.redirect_uri):
-            raise UnauthorizedClient(self, self.redirect_uri)
+            raise UnauthorizedClient(self)
 
         response = self.response(self, self.redirect_uri)
 
