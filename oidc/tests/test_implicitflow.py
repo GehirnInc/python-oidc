@@ -125,7 +125,7 @@ class RequestTest(TestBase):
             inst.answer(self.provider, self.owner)
         except UnauthorizedClient as why:
             self.assertIs(why.request, inst)
-            self.assertEqual(why.redirect_uri, self.client.get_redirect_uri())
+            self.assertIsNone(why.redirect_uri)
         else:
             self.fail()
 
@@ -149,7 +149,7 @@ class RequestTest(TestBase):
                 inst.answer(self.provider, self.owner)
         except UnauthorizedClient as why:
             self.assertIs(why.request, inst)
-            self.assertEqual(why.redirect_uri, self.client.get_redirect_uri())
+            self.assertIsNone(why.redirect_uri)
         else:
             self.fail()
 
