@@ -6,7 +6,7 @@ from setuptools import setup, find_packages
 
 here = os.path.dirname(__file__)
 requires = [
-    'py3oauth2==0.4.3',
+    'py3oauth2==0.4.4',
     'jwt==0.2.3',
 ]
 tests_require = [
@@ -25,7 +25,7 @@ license = _read("LICENSE.rst")
 
 setup(
     name='oidc',
-    version='0.1.4',
+    version='0.1.5',
     test_suite='oidc',
     author='Kohei YOSHIDA',
     author_email='kohei.yoshida@gehirn.co.jp',
